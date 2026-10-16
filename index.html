@@ -1,446 +1,82 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Cap Examens</title>
-<meta name="description" content="Planificateur de révisions : répartit ton temps chaque jour selon tes dates d'examen.">
-<meta name="theme-color" content="#2447F5">
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="icon-192.png">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cap Examens V2 Pro - Planificateur</title>
 <style>
-*{margin:0}[hidden]{display:none!important}
-html{color-scheme:light}
-/* Layout: une colonne de carnet. Le jour d'aujourd'hui en haut, puis réglages, matières, jours suivants. */
-:root{
-  --bg:#F2F4F8; --surface:#FFFFFF; --fg:#14213D; --muted:#5B6783; --line:#D9DEE9;
-  --accent:#2447F5; --accent-fg:#FFFFFF; --mark:#FFE45C; --mark-fg:#14213D; --danger:#C4322B;
-  --c0:#2447F5; --c1:#0E8F6E; --c2:#C7511F; --c3:#8A3FC4; --c4:#B58900; --c5:#D1347B;
-  --f-display:'Trebuchet MS','Segoe UI',Roboto,system-ui,sans-serif;
-  --f-body:'Segoe UI',Roboto,system-ui,-apple-system,sans-serif;
-  --f-mono:ui-monospace,Menlo,Consolas,'Roboto Mono',monospace;
-}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#0E1424; --surface:#172036; --fg:#E8ECF8; --muted:#9AA5C4; --line:#2B3654;
-  --accent:#7C93FF; --accent-fg:#0E1424; --mark:#FFE45C; --mark-fg:#14213D; --danger:#FF8A80;
-  --c0:#7C93FF; --c1:#4FD1A5; --c2:#FF9A62; --c3:#C99BFF; --c4:#F2C94C; --c5:#FF7DB1; color-scheme:dark}}
-:root[data-theme="dark"]{
-  --bg:#0E1424; --surface:#172036; --fg:#E8ECF8; --muted:#9AA5C4; --line:#2B3654;
-  --accent:#7C93FF; --accent-fg:#0E1424; --mark:#FFE45C; --mark-fg:#14213D; --danger:#FF8A80;
-  --c0:#7C93FF; --c1:#4FD1A5; --c2:#FF9A62; --c3:#C99BFF; --c4:#F2C94C; --c5:#FF7DB1; color-scheme:dark}
-*{box-sizing:border-box}
-body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:16px;line-height:1.5;
-  padding-top:max(24px,env(safe-area-inset-top,0px));padding-bottom:max(48px,env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-main{max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
-h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.1}
-h1{font-size:2rem;font-weight:800;letter-spacing:-.02em}
-h1 span{background:linear-gradient(transparent 60%,var(--mark) 60%);color:var(--fg);padding:0 .1em}
-h2{font-size:1.25rem;font-weight:700}
-.lead{color:var(--muted);margin:8px 0 0;max-width:46ch}
-.label{font-family:var(--f-mono);font-size:.72rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px;display:flex;flex-direction:column;gap:14px;min-width:0}
-.head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
-.bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden}
-.bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .3s}
-.sessions{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
-.session{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);cursor:pointer;min-width:0}
-.session input{width:20px;height:20px;accent-color:var(--accent);margin:0}
-.session .nm{font-weight:600;display:flex;align-items:center;gap:8px;min-width:0}
-.session .nm b{overflow-wrap:anywhere}
-.session .ph{font-size:.85rem;color:var(--muted)}
-.session .mn{font-family:var(--f-mono);font-size:.9rem;white-space:nowrap}
-.session.done .nm b{text-decoration:line-through;color:var(--muted)}
-.dot{width:10px;height:10px;border-radius:50%;flex:none}
-.note{padding:12px;border-radius:8px;background:var(--mark);color:var(--mark-fg);font-weight:600}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-label{display:flex;flex-direction:column;gap:6px;font-size:.85rem;color:var(--muted);min-width:0}
-input[type=text],input[type=date],input[type=number],select{font:inherit;font-size:1rem;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;width:100%;min-width:0}
-button{font:inherit;font-weight:600;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--fg);padding:10px 14px}
-button.primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
-button.ghost{border:none;background:none;color:var(--muted);padding:6px 8px}
-:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
-.subj{display:grid;grid-template-columns:auto 1fr auto auto;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
-.subj:first-child{border-top:none}
-.subj .meta{font-size:.85rem;color:var(--muted)}
-.cd{font-family:var(--f-mono);font-weight:500;background:var(--mark);color:var(--mark-fg);padding:2px 8px;border-radius:4px;font-size:.85rem;white-space:nowrap}
-.cd.low{background:var(--line);color:var(--fg)}
-.addgrid{display:grid;grid-template-columns:2fr 1.4fr 1.4fr;gap:10px}
-@media (max-width:520px){.addgrid{grid-template-columns:1fr 1fr}.addgrid label:first-child{grid-column:1/-1}}
-details{border:1px solid var(--line);border-radius:10px;background:var(--surface)}
-summary{padding:14px 18px;cursor:pointer;font-weight:600;list-style:none;display:flex;justify-content:space-between;gap:12px}
-summary::-webkit-details-marker{display:none}
-.days{padding:0 18px 18px;display:flex;flex-direction:column;gap:14px}
-.day h3{font-size:1rem;text-transform:capitalize;margin-bottom:6px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
-.chips{display:flex;flex-wrap:wrap;gap:6px}
-.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:6px;padding:3px 9px;font-size:.88rem;background:var(--bg)}
-.chip em{font-style:normal;font-family:var(--f-mono);color:var(--muted);font-size:.8rem}
-.ex{font-size:.8rem;color:var(--muted)}
-.empty{color:var(--muted);margin:0}
-.share-actions{display:flex;flex-wrap:wrap;gap:10px}
-a.btn{font-weight:600;text-decoration:none;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--fg);padding:10px 14px;display:inline-block}
-textarea{font:inherit;font-family:var(--f-mono);font-size:.85rem;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;width:100%;min-height:96px;resize:vertical}
-.status{min-height:1.4em;font-size:.9rem;color:var(--muted);margin:0}
-.alerts{display:flex;flex-direction:column;gap:8px}.alerts:empty{display:none}
-.btns{display:flex;flex-wrap:wrap;gap:10px}
-a.btn{font-weight:600;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-fg);padding:10px 14px;text-decoration:none;display:inline-block}
-.meta a{color:var(--accent);font-weight:600}
-.mono{font-family:var(--f-mono);font-size:.8rem}
-@media (prefers-reduced-motion:reduce){.bar i{transition:none}}
-.dt{font:inherit;font-size:.85rem;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:3px 6px;width:auto}
-.lock{display:flex;flex-direction:column;gap:10px}
-.badge{font-family:var(--f-mono);font-size:.72rem;text-transform:uppercase;letter-spacing:.09em;padding:3px 8px;border-radius:4px;background:var(--line);color:var(--fg)}
-.badge.pro{background:var(--accent);color:var(--accent-fg)}
-.warn{color:var(--danger);font-weight:600}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;700&family=JetBrains+Mono:wght@600&display=swap');
+:root{--bg:#0c0c0f;--card:#18181d;--card2:#202026;--gold:#eab308;--text:#f5f5f0;--muted:#9a9aa0}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;padding-bottom:90px}
+.mono{font-family:'JetBrains Mono',monospace}
+.header{padding:24px 20px 12px;max-width:600px;margin:auto}
+.kicker{color:var(--muted);font-size:11px;letter-spacing:3px;text-transform:uppercase}
+h1{font-size:34px;font-weight:800;margin-top:4px}
+.sub{color:var(--muted);font-size:13px;line-height:1.5;margin-top:12px}
+.alert{max-width:600px;margin:18px auto;padding:14px 16px;background:#3a2a12;border:1px solid #5a4120;border-radius:12px;color:#fbbf24;font-size:13px;font-weight:600;display:flex;justify-content:space-between;align-items:center}
+.container{max-width:600px;margin:auto;padding:0 16px;display:flex;flex-direction:column;gap:16px}
+.card{background:var(--card);border:1px solid #2a2a32;border-radius:20px;padding:18px}
+.task{background:var(--card2);border:1px solid #2e2e38;border-radius:14px;padding:14px;display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.task input{width:20px;height:20px;accent-color:var(--gold)}
+.dot{width:10px;height:10px;border-radius:50%}
+.task-info{flex:1}
+.task-info b{font-size:14px}
+.task-info small{display:block;color:var(--muted);font-size:11px;margin-top:2px}
+.btn{padding:14px;border-radius:12px;border:none;font-weight:700;cursor:pointer;width:100%;margin-top:8px}
+.btn-gold{background:linear-gradient(180deg,#fde68a,#eab308);color:#000;font-size:16px;letter-spacing:0.5px}
+.btn-dark{background:#2a2a32;color:#fff}
+input,select{padding:12px;border-radius:10px;border:1px solid #2e2e38;background:#121216;color:#fff;width:100%;font-size:14px;margin-bottom:8px}
+.premium{margin-top:10px;background:linear-gradient(135deg,#1e1c15,#2a2418);border:1px solid #4a3d20;border-radius:16px;padding:16px;text-align:center}
+.nav{position:fixed;bottom:0;left:0;right:0;background:#111114;border-top:1px solid #222;display:flex;justify-content:space-around;padding:10px 0;max-width:600px;margin:auto}
+.nav div{text-align:center;color:var(--muted);font-size:11px}
+.nav.active{color:var(--gold)}
 </style>
 </head>
 <body>
-<main>
-  <header>
-    <div class="label">Planificateur de révisions</div>
-    <h1>Cap <span>Examens</span></h1>
-    <p class="lead">Entre tes matières et leurs dates d'examen. L'outil répartit ton temps chaque jour selon la difficulté et le nombre de jours restants.</p>
-  </header>
-
-  <div id="alerts" class="alerts" role="status"></div>
-
-  <section class="card" aria-labelledby="t-today">
-    <div class="head"><h2 id="t-today">Aujourd'hui</h2><span class="label" id="today-date"></span></div>
-    <div class="bar" aria-hidden="true"><i id="prog"></i></div>
-    <div class="label" id="prog-txt"></div>
-    <ul class="sessions" id="today-list"></ul>
-  </section>
-
-  <section class="card" aria-labelledby="t-time">
-    <h2 id="t-time">Ton temps disponible</h2>
-    <div class="row">
-      <label for="wk">Heures par jour de semaine<input type="number" id="wk" min="0" max="12" step="0.5"></label>
-      <label for="we">Heures le week-end<input type="number" id="we" min="0" max="12" step="0.5"></label>
-    </div>
-  </section>
-
-  <section class="card" aria-labelledby="t-subj">
-    <div class="head"><h2 id="t-subj">Tes matières</h2><span class="ex" id="ex-flag">Exemples à remplacer par tes matières</span></div>
-    <div id="subj-list"></div>
-    <form id="add" class="addgrid" autocomplete="off">
-      <label for="n-name">Matière<input type="text" id="n-name" placeholder="ex : Physique-Chimie" required maxlength="40"></label>
-      <label for="n-date">Date d'examen<input type="date" id="n-date" required></label>
-      <label for="n-diff">Difficulté pour toi
-        <select id="n-diff"><option value="1">1 · Facile</option><option value="2">2 · Plutôt facile</option><option value="3" selected>3 · Moyen</option><option value="4">4 · Difficile</option><option value="5">5 · Très difficile</option></select>
-      </label>
-      <button class="primary" type="submit" style="grid-column:1/-1">Ajouter la matière</button>
-    </form>
-  </section>
-
-  <section class="card" aria-labelledby="t-tpl">
-    <div class="head"><h2 id="t-tpl">Modèles d'examen</h2><span class="badge pro">Illimité</span></div>
-    <p class="ex" style="margin:0">Charge d'un coup les matières de ton examen. Ce sont des points de départ : vérifie les matières et les dates de ta série auprès de ton établissement.</p>
-    <div class="row">
-      <label for="tpl-sel">Examen
-        <select id="tpl-sel">
-          <option value="bepc">BEPC</option>
-          <option value="bacd">BAC série D</option>
-          <option value="bacc">BAC série C</option>
-          <option value="baca">BAC série A</option>
-        </select>
-      </label>
-      <label for="tpl-date">Début des épreuves<input type="date" id="tpl-date"></label>
-    </div>
-    <button type="button" id="tpl-btn">Charger le modèle</button>
-    <p class="ex" id="tpl-msg" role="status" style="margin:0"></p>
-  </section>
-
-  <section class="card lock" aria-labelledby="t-pro">
-    <div class="head"><h2 id="t-pro">Ton accès</h2><span class="badge" id="plan-badge">Gratuit</span></div>
-    <p class="ex" id="plan-txt" style="margin:0"></p>
-    <div id="unlock-box" class="lock">
-      <label for="pro-code">Code d'accès<input type="text" id="pro-code" class="mono" placeholder="Colle ton code ici" autocomplete="off"></label>
-      <div class="btns">
-        <button type="button" id="pro-btn" class="primary">Débloquer</button>
-        <a class="btn" id="buy" href="#" target="_blank" rel="noopener" hidden>Obtenir un code</a>
-      </div>
-    </div>
-    <p class="ex" id="pro-msg" role="status" style="margin:0"></p>
-  </section>
-
-  <section class="card" aria-labelledby="t-share">
-    <h2 id="t-share">Partager avec tes camarades</h2>
-    <p class="lead" style="margin:0">Envoie ton programme du jour sur WhatsApp, ou donne ton planning complet à un ami grâce à un code.</p>
-    <div class="share-actions">
-      <a class="btn primary" id="wa" href="https://wa.me/" target="_blank" rel="noopener" style="background:var(--accent);color:var(--accent-fg);border-color:var(--accent)">Envoyer sur WhatsApp</a>
-      <button type="button" id="copy-text">Copier le programme du jour</button>
-      <button type="button" id="copy-code">Copier mon code de planning</button>
-    </div>
-    <label for="share-box">Texte ou code à copier<textarea id="share-box" readonly></textarea></label>
-    <label for="import-box">Code reçu d'un ami<textarea id="import-box" placeholder="Colle ici le code, puis appuie sur Importer"></textarea></label>
-    <div class="share-actions"><button type="button" id="do-import">Importer ce planning</button></div>
-    <p class="status" id="share-status" role="status" aria-live="polite"></p>
-  </section>
-
-  <details id="upcoming">
-    <summary><span>Jours suivants</span><span class="label" id="up-count"></span></summary>
-    <div class="days" id="days"></div>
-  </details>
-
-  <p class="ex">Les jours chargés viennent avant les examens les plus proches et les matières les plus difficiles. Plus l'examen approche, plus la séance passe de l'apprentissage aux exercices, puis à la relecture.</p>
-</main>
-
+<div class="header">
+<div class="kicker mono">PLANIFICATEUR DE RÉVISIONS</div>
+<h1>Cap Examens V2 Pro</h1>
+<div class="sub">Entre tes matières et leurs dates d'examen. L'outil répartit ton temps chaque jour selon la difficulté et le nombre de jours restants.</div>
+</div>
+<div class="alert mono" id="alertBox"><span id="alertText">Chargement...</span><span onclick="this.parentElement.style.display='none'" style="cursor:pointer">✕</span></div>
+<div class="container">
+<div class="card">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><h2 style="font-size:14px;letter-spacing:1px;color:var(--muted)">AUJOURD'HUI</h2><span class="mono" id="todayDate" style="font-size:11px;color:var(--muted)"></span></div>
+<h2 style="font-size:24px;margin-bottom:4px" id="dateLong"></h2>
+<div class="mono" style="font-size:12px;color:var(--muted);margin-bottom:14px" id="progressText">0 SÉANCE FAITE SUR 0</div>
+<div id="taskList"></div>
+<button class="btn btn-gold" onclick="premium()">COMMENCER UNE SÉANCE — PREMIUM</button>
+</div>
+<div class="card">
+<h2 style="margin-bottom:12px">+ Ajouter une matière</h2>
+<input id="matiere" placeholder="Matière: ex Histoire-Géo">
+<select id="type"><option>Exercices et annales</option><option>Apprendre le cours</option><option>Fiches + QCM</option><option>Révision intensive</option></select>
+<select id="difficulte"><option value="1">Facile</option><option value="2" selected>Moyen</option><option value="3">Difficile</option></select>
+<input id="dateExamen" type="date">
+<input id="duree" type="number" value="30">
+<button class="btn btn-gold" onclick="addMatiere()">Ajouter et répartir</button>
+<button class="btn btn-dark" onclick="resetAll()">Réinitialiser tout</button>
+</div>
+<div class="card">
+<h2>Ton temps disponible</h2>
+<select id="tempsDispo" style="margin-top:10px" onchange="saveTime()"><option value="60">1h par jour</option><option value="120" selected>2h par jour</option><option value="180">3h par jour</option><option value="240">4h par jour</option></select>
+<div class="premium"><b style="color:#fbbf24">🔓 Cap Examens Premium</b><br><small style="color:#ccc">15 matières, fiches PDF, mode hors-ligne, sans pub.<br>500F une fois - Wave / OM</small><br><button class="btn btn-gold" style="margin-top:10px" onclick="premium()">Passer Premium - 500F</button><small style="display:block;margin-top:8px;color:#888">Contact: JABIN Ariel 07 99 69 63 47</small></div>
+</div>
+</div>
+<div class="nav"><div class="active">🏠<br>Accueil</div><div>📅<br>Planning</div><div>📊<br>Stats</div><div>👤<br>Profil</div></div>
 <script>
-(function(){
-  /* ===== RÉGLAGES À MODIFIER ===== */
-  var FREE_LIMIT=3;                       // matières gratuites
-  var SELLER_WA='2250799696347';           // numéro WhatsApp vendeur (indicatif 225 + numéro)
-  var PRICE_TEXT='1 000 FCFA';            // prix affiché
-  var ACCESS_CODES=[   // 1 code = 1 élève. Visibles dans le code de la page : à remplacer par un serveur plus tard.
-    'CAP-3V8S-4RBW',
-    'CAP-43AP-D3E2',
-    'CAP-5472-NR56',
-    'CAP-5D6Y-4M2D',
-    'CAP-5XMQ-9VB8',
-    'CAP-8422-EASU',
-    'CAP-B9ZN-6NSA',
-    'CAP-BM4Z-M3JZ',
-    'CAP-BYW9-ACWS',
-    'CAP-CWCT-UNR6',
-    'CAP-DP77-AQ2B',
-    'CAP-E25F-JP3Q',
-    'CAP-ESAD-BK9F',
-    'CAP-FHPS-UGZC',
-    'CAP-H688-4EEE',
-    'CAP-J7AW-4GWD',
-    'CAP-J949-3BSR',
-    'CAP-KQXA-479H',
-    'CAP-N3QM-46PG',
-    'CAP-NKP6-67AN',
-    'CAP-NQKR-CFGN',
-    'CAP-P2WY-ZGDZ',
-    'CAP-P7CU-HX69',
-    'CAP-QHQM-HTTS',
-    'CAP-U9XA-PQMA',
-    'CAP-UAHF-EXDN',
-    'CAP-VV64-GHP8',
-    'CAP-WMWT-ZTN2',
-    'CAP-YWBK-JG4W',
-    'CAP-ZRK8-TMUR'
-  ];
-  /* ================================ */
-  var KEY='cap-examens-v1',PKEY='cap-examens-pro';
-  var TEMPLATES={
-    bepc:['Français','Mathématiques','Anglais','Histoire-Géographie','Physique-Chimie','SVT'],
-    bacd:['Mathématiques','Physique-Chimie','SVT','Français','Philosophie','Anglais','Histoire-Géographie'],
-    bacc:['Mathématiques','Physique-Chimie','SVT','Français','Philosophie','Anglais','Histoire-Géographie'],
-    baca:['Philosophie','Français','Histoire-Géographie','Anglais','Mathématiques','Langue vivante 2']
-  };
-  var isPro=false;try{isPro=localStorage.getItem(PKEY)==='1'}catch(e){}
-  var COLORS=['--c0','--c1','--c2','--c3','--c4','--c5'];
-  function iso(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
-  function parse(s){var p=s.split('-');return new Date(+p[0],+p[1]-1,+p[2])}
-  function addDays(d,n){var x=new Date(d.getFullYear(),d.getMonth(),d.getDate());x.setDate(x.getDate()+n);return x}
-  function diffDays(a,b){return Math.round((parse(iso(b))-parse(iso(a)))/86400000)}
-  function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
-  function fr(d,o){return d.toLocaleDateString('fr-FR',o)}
-  var today=new Date(); today=new Date(today.getFullYear(),today.getMonth(),today.getDate());
-
-  function sample(){
-    var base=[['Mathématiques',12,5],['Français',9,3],['Histoire-Géographie',7,4],['SVT',14,2],['Anglais',5,2]];
-    return base.map(function(b,i){return {id:'s'+i,name:b[0],date:iso(addDays(today,b[1])),diff:b[2],ci:i}});
-  }
-  var state={subjects:sample(),wk:2,we:3,done:{},example:true,next:10};
-  try{var raw=localStorage.getItem(KEY);if(raw){var s=JSON.parse(raw);if(s&&s.subjects)state=s}}catch(e){}
-  function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
-
-  function phase(left){return left>=8?'Apprendre le cours':left>=3?'Exercices et annales':'Relecture et fiches'}
-
-  // Répartit les blocs de 30 min entre matières actives, au prorata de difficulté × urgence.
-  function planFor(d){
-    var active=state.subjects.filter(function(s){return diffDays(d,parse(s.date))>=1});
-    if(!active.length)return [];
-    var hrs=(d.getDay()===0||d.getDay()===6)?state.we:state.wk;
-    var total=Math.round((+hrs||0)*2);
-    if(total<=0)return [];
-    var ws=active.map(function(s){var left=diffDays(d,parse(s.date));return s.diff*(1+4/left)});
-    var sum=ws.reduce(function(a,b){return a+b},0);
-    var raw=ws.map(function(w){return w/sum*total});
-    var base=raw.map(Math.floor);
-    var rest=total-base.reduce(function(a,b){return a+b},0);
-    raw.map(function(r,i){return {i:i,f:r-Math.floor(r)}}).sort(function(a,b){return b.f-a.f}).slice(0,rest).forEach(function(o){base[o.i]++});
-    return active.map(function(s,i){return {s:s,min:base[i]*30,left:diffDays(d,parse(s.date))}}).filter(function(x){return x.min>0}).sort(function(a,b){return a.left-b.left});
-  }
-  function col(s){return 'var('+COLORS[(s.ci!=null?s.ci:0)%COLORS.length]+')'}
-  function fmt(m){var h=Math.floor(m/60),r=m%60;return h?(h+' h'+(r?(' '+String(r).padStart(2,'0')):'')):(r+' min')}
-
-  function renderToday(){
-    document.getElementById('today-date').textContent=fr(today,{weekday:'long',day:'numeric',month:'long'});
-    var ul=document.getElementById('today-list'),items=planFor(today),k=iso(today);
-    var exams=state.subjects.filter(function(s){return s.date===k});
-    var html='';
-    exams.forEach(function(s){html+='<li class="note">Examen aujourd\'hui : '+esc(s.name)+'. Relis tes fiches et repose-toi.</li>'});
-    if(!items.length&&!exams.length){html+='<li><p class="empty">Rien de prévu aujourd\'hui. Ajoute une matière avec une date d\'examen à venir.</p></li>'}
-    var done=0;
-    items.forEach(function(it){
-      var key=k+'|'+it.s.id,c=!!state.done[key];if(c)done++;
-      html+='<li><label class="session'+(c?' done':'')+'" for="c-'+it.s.id+'"><input type="checkbox" id="c-'+it.s.id+'" data-key="'+key+'"'+(c?' checked':'')+'>'+
-        '<span><span class="nm"><i class="dot" style="background:'+col(it.s)+'"></i><b>'+esc(it.s.name)+'</b></span><span class="ph">'+phase(it.left)+'</span></span>'+
-        '<span class="mn">'+fmt(it.min)+'</span></label></li>';
-    });
-    ul.innerHTML=html;
-    var pct=items.length?Math.round(done/items.length*100):0;
-    document.getElementById('prog').style.width=pct+'%';
-    document.getElementById('prog-txt').textContent=items.length?(done+' séance'+(done>1?'s':'')+' faite'+(done>1?'s':'')+' sur '+items.length):'';
-  }
-
-  function renderSubjects(){
-    var list=document.getElementById('subj-list');
-    var arr=state.subjects.slice().sort(function(a,b){return a.date<b.date?-1:1});
-    if(!arr.length){list.innerHTML='<p class="empty">Aucune matière pour l\'instant.</p>'}
-    else list.innerHTML=arr.map(function(s){
-      var left=diffDays(today,parse(s.date));
-      var cd=left<0?'passé':left===0?'aujourd\'hui':'J-'+left;
-      return '<div class="subj"><i class="dot" style="background:'+col(s)+'"></i>'+
-        '<div><div><b>'+esc(s.name)+'</b></div><div class="meta"><input type="date" class="dt" data-date="'+s.id+'" value="'+s.date+'" aria-label="Date d\'examen : '+esc(s.name)+'"> · difficulté '+s.diff+'/5'+(left>=0?' · <a href="'+gcal(s)+'" target="_blank" rel="noopener">Ajouter à Google Agenda</a>':'')+'</div></div>'+
-        '<span class="cd'+(left>7||left<0?' low':'')+'">'+cd+'</span>'+
-        '<button class="ghost" data-del="'+s.id+'" aria-label="Retirer '+esc(s.name)+'">Retirer</button></div>';
-    }).join('');
-    document.getElementById('ex-flag').hidden=!state.example;
-  }
-
-  function renderDays(){
-    var last=state.subjects.reduce(function(m,s){return s.date>m?s.date:m},'');
-    var out='',n=0;
-    for(var i=1;i<=21;i++){
-      var d=addDays(today,i);if(last&&iso(d)>=last)break;
-      var items=planFor(d);if(!items.length)continue;n++;
-      var tot=items.reduce(function(a,b){return a+b.min},0);
-      out+='<div class="day"><h3><span>'+fr(d,{weekday:'long',day:'numeric',month:'long'})+'</span><span class="label">'+fmt(tot)+'</span></h3><div class="chips">'+
-        items.map(function(it){return '<span class="chip"><i class="dot" style="background:'+col(it.s)+'"></i>'+esc(it.s.name)+' <em>'+fmt(it.min)+'</em></span>'}).join('')+'</div></div>';
-    }
-    document.getElementById('days').innerHTML=out||'<p class="empty">Pas d\'autre jour de révision prévu.</p>';
-    document.getElementById('up-count').textContent=n?(n+' jour'+(n>1?'s':'')):'';
-  }
-
-  function gcal(s){
-    var d=parse(s.date),e=addDays(d,1);
-    var f=function(x){return iso(x).replace(/-/g,'')};
-    return 'https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent('Examen : '+s.name)+'&dates='+f(d)+'/'+f(e);
-  }
-  function renderAlerts(){
-    var out='';
-    state.subjects.slice().sort(function(a,b){return a.date<b.date?-1:1}).forEach(function(s){
-      var left=diffDays(today,parse(s.date));
-      if(left===1||left===2||left===3||left===7){
-        out+='<div class="note">'+esc(s.name)+' : examen '+(left===1?'demain':'dans '+left+' jours')+'.</div>';
-      }
-    });
-    document.getElementById('alerts').innerHTML=out;
-  }
-  function renderPlan(){
-    var b=document.getElementById('plan-badge');
-    b.textContent=isPro?'Illimité':'Gratuit';b.className='badge'+(isPro?' pro':'');
-    document.getElementById('plan-txt').textContent=isPro
-      ?'Accès illimité activé : matières sans limite et modèles d\'examen.'
-      :'Gratuit : '+FREE_LIMIT+' matières au maximum. Un code d\'accès ('+PRICE_TEXT+') débloque les matières illimitées et les modèles BEPC et BAC.';
-    document.getElementById('unlock-box').hidden=isPro;
-    var buy=document.getElementById('buy');
-    if(SELLER_WA&&!isPro){buy.hidden=false;buy.href='https://wa.me/'+SELLER_WA+'?text='+encodeURIComponent('Bonjour, je veux un code d\'accès pour Cap Examens.')}else buy.hidden=true;
-  }
-  function realCount(){return state.example?0:state.subjects.length}
-  function renderAll(){renderToday();renderSubjects();renderDays();renderAlerts();renderPlan()}
-
-  document.getElementById('today-list').addEventListener('change',function(e){
-    var k=e.target.getAttribute('data-key');if(!k)return;
-    if(e.target.checked)state.done[k]=1;else delete state.done[k];
-    save();renderToday();
-  });
-  document.getElementById('subj-list').addEventListener('click',function(e){
-    var id=e.target.getAttribute('data-del');if(!id)return;
-    state.subjects=state.subjects.filter(function(s){return s.id!==id});save();renderAll();
-  });
-  document.getElementById('add').addEventListener('submit',function(e){
-    e.preventDefault();
-    var name=document.getElementById('n-name').value.trim(),date=document.getElementById('n-date').value,diff=+document.getElementById('n-diff').value;
-    if(!name||!date)return;
-    if(!isPro&&realCount()>=FREE_LIMIT){proMsg('Limite atteinte : '+FREE_LIMIT+' matières en version gratuite. Entre un code d\'accès pour en ajouter d\'autres.');document.getElementById('pro-code').focus();return}
-    if(state.example){state.subjects=[];state.example=false}
-    state.subjects.push({id:'s'+(state.next++),name:name,date:date,diff:diff,ci:state.subjects.length});
-    save();renderAll();e.target.reset();document.getElementById('n-diff').value='3';
-  });
-  ['wk','we'].forEach(function(id){
-    var el=document.getElementById(id);el.value=state[id];
-    el.addEventListener('input',function(){var v=parseFloat(el.value);state[id]=isNaN(v)?0:Math.max(0,Math.min(12,v));save();renderAll()});
-  });
-  // Partage : texte WhatsApp du jour et code de planning
-  function setStatus(t){document.getElementById('share-status').textContent=t}
-  function dayText(){
-    var items=planFor(today),k=iso(today);
-    var t='Mon programme de révision, '+fr(today,{weekday:'long',day:'numeric',month:'long'})+' :\n';
-    if(!items.length)t+='Pas de séance prévue.\n';
-    items.forEach(function(it){t+='- '+it.s.name+' : '+fmt(it.min)+' ('+phase(it.left)+')\n'});
-    var ex=state.subjects.filter(function(s){return diffDays(today,parse(s.date))>=0}).sort(function(a,b){return a.date<b.date?-1:1}).slice(0,4);
-    if(ex.length){t+='\nProchains examens :\n';ex.forEach(function(s){var l=diffDays(today,parse(s.date));t+='- '+s.name+' : '+fr(parse(s.date),{day:'numeric',month:'long'})+(l===0?' (aujourd\'hui)':' (J-'+l+')')+'\n'})}
-    return t+'\nFait avec Cap Examens';
-  }
-  function makeCode(){
-    var data={v:1,wk:state.wk,we:state.we,s:state.subjects.map(function(s){return [s.name,s.date,s.diff]})};
-    return btoa(unescape(encodeURIComponent(JSON.stringify(data))));
-  }
-  function readCode(c){
-    var d=JSON.parse(decodeURIComponent(escape(atob(c.trim()))));
-    if(!d||d.v!==1||!Array.isArray(d.s)||!d.s.length||d.s.length>12)throw new Error('format');
-    var subs=d.s.map(function(r,i){
-      if(!Array.isArray(r)||typeof r[0]!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(r[1])||!(r[2]>=1&&r[2]<=5))throw new Error('format');
-      return {id:'s'+i,name:r[0].slice(0,40),date:r[1],diff:Math.round(r[2]),ci:i};
-    });
-    return {subjects:subs,wk:Math.max(0,Math.min(12,+d.wk||0)),we:Math.max(0,Math.min(12,+d.we||0))};
-  }
-  function copyOut(text,msg){
-    var box=document.getElementById('share-box');box.value=text;
-    function fallback(){box.focus();box.select();setStatus('Sélectionné. Appuie sur Copier (ou Ctrl+C) pour le garder.')}
-    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(function(){setStatus(msg)},fallback)}else fallback();
-  }
-  function refreshWa(){document.getElementById('wa').href='https://wa.me/?text='+encodeURIComponent(dayText())}
-  document.getElementById('copy-text').addEventListener('click',function(){copyOut(dayText(),'Programme du jour copié.')});
-  document.getElementById('copy-code').addEventListener('click',function(){copyOut(makeCode(),'Code copié. Envoie-le à ton ami.')});
-  document.getElementById('do-import').addEventListener('click',function(){
-    var v=document.getElementById('import-box').value;
-    if(!v.trim()){setStatus('Colle d\'abord un code.');return}
-    try{var r=readCode(v);
-      if(!isPro&&r.subjects.length>FREE_LIMIT){setStatus('Ce planning a '+r.subjects.length+' matières. La version gratuite en accepte '+FREE_LIMIT+'. Entre un code d\'accès pour l\'importer.');return}
-      state.subjects=r.subjects;state.wk=r.wk;state.we=r.we;state.example=false;state.done={};state.next=r.subjects.length+1;
-      document.getElementById('wk').value=state.wk;document.getElementById('we').value=state.we;
-      save();renderAll();refreshWa();document.getElementById('import-box').value='';setStatus('Planning importé : '+r.subjects.length+' matières.')}
-    catch(e){setStatus('Ce code n\'est pas valide. Demande à ton ami de le copier de nouveau.')}
-  });
-  document.getElementById('wa').addEventListener('click',refreshWa);
-  refreshWa();
-  // Accès illimité : code d'accès
-  function proMsg(t){document.getElementById('pro-msg').textContent=t}
-  document.getElementById('pro-btn').addEventListener('click',function(){
-    var v=document.getElementById('pro-code').value.trim().toUpperCase();
-    if(ACCESS_CODES.indexOf(v)<0){proMsg('Code non reconnu. Vérifie les lettres et les tirets.');return}
-    isPro=true;try{localStorage.setItem(PKEY,'1')}catch(e){}
-    document.getElementById('pro-code').value='';proMsg('Accès illimité activé.');renderAll();
-  });
-  // Date d'examen modifiable dans la liste
-  document.getElementById('subj-list').addEventListener('change',function(e){
-    var id=e.target.getAttribute('data-date');if(!id||!e.target.value)return;
-    state.subjects.forEach(function(s){if(s.id===id)s.date=e.target.value});
-    save();renderAll();
-  });
-  // Modèles d'examen (accès illimité)
-  document.getElementById('tpl-btn').addEventListener('click',function(){
-    var msg=document.getElementById('tpl-msg'),date=document.getElementById('tpl-date').value;
-    if(!isPro){msg.textContent='Les modèles font partie de l\'accès illimité. Entre ton code plus bas.';return}
-    if(!date){msg.textContent='Choisis d\'abord le début des épreuves.';return}
-    var list=TEMPLATES[document.getElementById('tpl-sel').value];
-    state.subjects=list.map(function(n,i){return {id:'s'+i,name:n,date:date,diff:3,ci:i}});
-    state.example=false;state.done={};state.next=list.length+1;save();renderAll();
-    msg.textContent=list.length+' matières chargées. Change la date de chaque épreuve dans la liste « Tes matières ».';
-  });
-  document.getElementById('n-date').min=iso(addDays(today,1));
-  document.getElementById('tpl-date').min=iso(addDays(today,1));
-  renderAll();
-  if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})})}
-})();
+const COLORS=['#facc15','#fb923c','#4ade80','#60a5fa','#a78bfa','#f472b6'];
+let matieres=JSON.parse(localStorage.getItem('cap_v2_matieres')||'[{"nom":"Anglais","type":"Exercices et annales","duree":30,"difficulte":2,"date":"2026-10-23","color":"#facc15"},{"nom":"Histoire-Géographie","type":"Exercices et annales","duree":30,"difficulte":3,"date":"2026-10-23","color":"#fb923c"},{"nom":"Français","type":"Apprendre le cours","duree":30,"difficulte":2,"date":"2026-10-25","color":"#4ade80"},{"nom":"Mathématiques","type":"Apprendre le cours","duree":30,"difficulte":3,"date":"2026-10-27","color":"#60a5fa"}]');
+let checks=JSON.parse(localStorage.getItem('cap_v2_checks')||'{}');
+function save(){localStorage.setItem('cap_v2_matieres',JSON.stringify(matieres));localStorage.setItem('cap_v2_checks',JSON.stringify(checks));render();}
+function addMatiere(){const nom=document.getElementById('matiere').value.trim();const type=document.getElementById('type').value;const duree=parseInt(document.getElementById('duree').value)||30;const diff=parseInt(document.getElementById('difficulte').value);const date=document.getElementById('dateExamen').value;if(!nom||!date){alert('Matière + date obligatoire');return}const color=COLORS[matieres.length%COLORS.length];matieres.push({nom,type,duree,difficulte:diff,date,color});document.getElementById('matiere').value='';save();}
+function resetAll(){if(confirm('Effacer tout?')){matieres=[];checks={};save();}}
+function toggleCheck(id){checks[id]=!checks[id];save();}
+function render(){const today=new Date().toISOString().slice(0,10);const list=document.getElementById('taskList');list.innerHTML='';let done=0;matieres.forEach((m,i)=>{const id=today+'_'+i;if(checks[id])done++;const div=document.createElement('div');div.className='task';div.style.opacity=checks[id]?'0.5':'1';const days=Math.max(0,Math.ceil((new Date(m.date)-new Date())/86400000));div.innerHTML=`<input type="checkbox" ${checks[id]?'checked':''} onchange="toggleCheck('${id}')"><div class="dot" style="background:${m.color}"></div><div class="task-info"><b>${m.nom}</b><small>${m.type} • J-${days}</small></div><div class="mono" style="color:var(--muted);font-size:12px">${m.duree} min</div>`;list.appendChild(div);});document.getElementById('progressText').textContent=`${done} SÉANCE FAITE SUR ${matieres.length}`;if(matieres.length>0){const sorted=[...matieres].sort((a,b)=>new Date(a.date)-new Date(b.date));const next=sorted[0];const diffDays=Math.ceil((new Date(next.date)-new Date())/86400000);document.getElementById('alertText').textContent=`${next.nom} • examen dans ${diffDays} jours`;}const d=new Date();document.getElementById('todayDate').textContent='AUJOURD\'HUI';document.getElementById('dateLong').textContent=d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'}).toUpperCase();document.getElementById('dateLong').style.textTransform='uppercase';}
+function saveTime(){localStorage.setItem('cap_v2_time',document.getElementById('tempsDispo').value);}
+function premium(){alert('Cap Examens Premium 500F\n\nPaye via Wave / Orange Money au 07 99 69 63 47 (JABIN Ariel)\n\nEnvoie la capture sur WhatsApp et je débloque ton accès Premium à vie.');}
+render();
 </script>
 </body>
 </html>
