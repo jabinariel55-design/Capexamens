@@ -1,82 +1,64 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cap Examens V2 Pro - Planificateur</title>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cap Examens V2 Pro</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;700&family=JetBrains+Mono:wght@600&display=swap');
-:root{--bg:#0c0c0f;--card:#18181d;--card2:#202026;--gold:#eab308;--text:#f5f5f0;--muted:#9a9aa0}
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;padding-bottom:90px}
-.mono{font-family:'JetBrains Mono',monospace}
-.header{padding:24px 20px 12px;max-width:600px;margin:auto}
-.kicker{color:var(--muted);font-size:11px;letter-spacing:3px;text-transform:uppercase}
-h1{font-size:34px;font-weight:800;margin-top:4px}
-.sub{color:var(--muted);font-size:13px;line-height:1.5;margin-top:12px}
-.alert{max-width:600px;margin:18px auto;padding:14px 16px;background:#3a2a12;border:1px solid #5a4120;border-radius:12px;color:#fbbf24;font-size:13px;font-weight:600;display:flex;justify-content:space-between;align-items:center}
-.container{max-width:600px;margin:auto;padding:0 16px;display:flex;flex-direction:column;gap:16px}
-.card{background:var(--card);border:1px solid #2a2a32;border-radius:20px;padding:18px}
-.task{background:var(--card2);border:1px solid #2e2e38;border-radius:14px;padding:14px;display:flex;align-items:center;gap:12px;margin-bottom:10px}
-.task input{width:20px;height:20px;accent-color:var(--gold)}
-.dot{width:10px;height:10px;border-radius:50%}
-.task-info{flex:1}
-.task-info b{font-size:14px}
-.task-info small{display:block;color:var(--muted);font-size:11px;margin-top:2px}
-.btn{padding:14px;border-radius:12px;border:none;font-weight:700;cursor:pointer;width:100%;margin-top:8px}
-.btn-gold{background:linear-gradient(180deg,#fde68a,#eab308);color:#000;font-size:16px;letter-spacing:0.5px}
-.btn-dark{background:#2a2a32;color:#fff}
-input,select{padding:12px;border-radius:10px;border:1px solid #2e2e38;background:#121216;color:#fff;width:100%;font-size:14px;margin-bottom:8px}
-.premium{margin-top:10px;background:linear-gradient(135deg,#1e1c15,#2a2418);border:1px solid #4a3d20;border-radius:16px;padding:16px;text-align:center}
-.nav{position:fixed;bottom:0;left:0;right:0;background:#111114;border-top:1px solid #222;display:flex;justify-content:space-around;padding:10px 0;max-width:600px;margin:auto}
-.nav div{text-align:center;color:var(--muted);font-size:11px}
-.nav.active{color:var(--gold)}
+body{background:#121212;color:#fff;font-family:system-ui;padding:20px}
+.card{background:#1e1e1e;border-radius:16px;padding:16px;margin:12px 0;border:1px solid #333}
+.btn-premium{background:#ff9800;color:#000;padding:16px;width:100%;border-radius:12px;font-weight:900;border:0;font-size:16px}
+#paywall{position:fixed;inset:0;background:rgba(0,0,0,.9);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px}
+.paybox{background:#1e1e1e;border-radius:20px;padding:24px;max-width:380px;width:100%;border:1px solid #ff9800;text-align:center}
+.btn-wave{background:#00c853;color:#fff;padding:14px;border-radius:10px;display:block;text-decoration:none;font-weight:800;margin:10px 0}
+.btn-wa{background:#25D366;color:#fff;padding:12px;border-radius:10px;display:block;text-decoration:none;font-weight:700;margin:10px 0}
+input{width:100%;padding:12px;border-radius:8px;border:1px solid #333;background:#2a2a2a;color:#fff;margin:8px 0;box-sizing:border-box}
 </style>
 </head>
 <body>
-<div class="header">
-<div class="kicker mono">PLANIFICATEUR DE RÉVISIONS</div>
-<h1>Cap Examens V2 Pro</h1>
-<div class="sub">Entre tes matières et leurs dates d'examen. L'outil répartit ton temps chaque jour selon la difficulté et le nombre de jours restants.</div>
-</div>
-<div class="alert mono" id="alertBox"><span id="alertText">Chargement...</span><span onclick="this.parentElement.style.display='none'" style="cursor:pointer">✕</span></div>
-<div class="container">
+
+<h1>🎓 Cap Examens</h1>
+<p>Planificateur de révisions intelligent</p>
+
 <div class="card">
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><h2 style="font-size:14px;letter-spacing:1px;color:var(--muted)">AUJOURD'HUI</h2><span class="mono" id="todayDate" style="font-size:11px;color:var(--muted)"></span></div>
-<h2 style="font-size:24px;margin-bottom:4px" id="dateLong"></h2>
-<div class="mono" style="font-size:12px;color:var(--muted);margin-bottom:14px" id="progressText">0 SÉANCE FAITE SUR 0</div>
-<div id="taskList"></div>
-<button class="btn btn-gold" onclick="premium()">COMMENCER UNE SÉANCE — PREMIUM</button>
+ <div>📚 Histoire-Géographie - 30 min</div>
+ <div>📚 Français - 30 min</div>
+ <div>📚 Mathématiques - 30 min</div>
+ <button class="btn-premium" onclick="checkPremium()">COMMENCER UNE SÉANCE — PREMIUM</button>
 </div>
+
 <div class="card">
-<h2 style="margin-bottom:12px">+ Ajouter une matière</h2>
-<input id="matiere" placeholder="Matière: ex Histoire-Géo">
-<select id="type"><option>Exercices et annales</option><option>Apprendre le cours</option><option>Fiches + QCM</option><option>Révision intensive</option></select>
-<select id="difficulte"><option value="1">Facile</option><option value="2" selected>Moyen</option><option value="3">Difficile</option></select>
-<input id="dateExamen" type="date">
-<input id="duree" type="number" value="30">
-<button class="btn btn-gold" onclick="addMatiere()">Ajouter et répartir</button>
-<button class="btn btn-dark" onclick="resetAll()">Réinitialiser tout</button>
+ <h3>+ Ajouter une matière</h3>
+ <input placeholder="Matière: ex Histoire-Géo">
 </div>
-<div class="card">
-<h2>Ton temps disponible</h2>
-<select id="tempsDispo" style="margin-top:10px" onchange="saveTime()"><option value="60">1h par jour</option><option value="120" selected>2h par jour</option><option value="180">3h par jour</option><option value="240">4h par jour</option></select>
-<div class="premium"><b style="color:#fbbf24">🔓 Cap Examens Premium</b><br><small style="color:#ccc">15 matières, fiches PDF, mode hors-ligne, sans pub.<br>500F une fois - Wave / OM</small><br><button class="btn btn-gold" style="margin-top:10px" onclick="premium()">Passer Premium - 500F</button><small style="display:block;margin-top:8px;color:#888">Contact: JABIN Ariel 07 99 69 63 47</small></div>
+
+<div id="paywall">
+ <div class="paybox">
+  <h2 style="color:#ff9800">🔒 Cap Examens Premium 500F</h2>
+  <p>Débloque toutes les séances illimitées + suivi intelligent</p>
+  
+  <a class="btn-wave" href="tel:*133*">📲 Payer 500F via Wave - 07 99 69 63 47</a>
+  <a class="btn-wa" href="https://wa.me/2250799696347?text=Salut JABIN, j'ai payé 500F pour Cap Examens Premium">💬 Envoyer preuve sur WhatsApp</a>
+  
+  <hr style="margin:20px 0;border-color:#333">
+  <p style="font-size:12px;color:#888">Tu es le patron ? Entre ton code :</p>
+  <input id="bossCode" placeholder="Code secret patron">
+  <button onclick="unlockBoss()" style="background:#fff;color:#000;padding:10px;width:100%;border-radius:8px;font-weight:800;border:0">DÉBLOQUER</button>
+  
+  <p style="margin-top:12px"><a onclick="document.getElementById('paywall').style.display='none'" style="color:#888;font-size:12px">Fermer</a></p>
+ </div>
 </div>
-</div>
-<div class="nav"><div class="active">🏠<br>Accueil</div><div>📅<br>Planning</div><div>📊<br>Stats</div><div>👤<br>Profil</div></div>
+
 <script>
-const COLORS=['#facc15','#fb923c','#4ade80','#60a5fa','#a78bfa','#f472b6'];
-let matieres=JSON.parse(localStorage.getItem('cap_v2_matieres')||'[{"nom":"Anglais","type":"Exercices et annales","duree":30,"difficulte":2,"date":"2026-10-23","color":"#facc15"},{"nom":"Histoire-Géographie","type":"Exercices et annales","duree":30,"difficulte":3,"date":"2026-10-23","color":"#fb923c"},{"nom":"Français","type":"Apprendre le cours","duree":30,"difficulte":2,"date":"2026-10-25","color":"#4ade80"},{"nom":"Mathématiques","type":"Apprendre le cours","duree":30,"difficulte":3,"date":"2026-10-27","color":"#60a5fa"}]');
-let checks=JSON.parse(localStorage.getItem('cap_v2_checks')||'{}');
-function save(){localStorage.setItem('cap_v2_matieres',JSON.stringify(matieres));localStorage.setItem('cap_v2_checks',JSON.stringify(checks));render();}
-function addMatiere(){const nom=document.getElementById('matiere').value.trim();const type=document.getElementById('type').value;const duree=parseInt(document.getElementById('duree').value)||30;const diff=parseInt(document.getElementById('difficulte').value);const date=document.getElementById('dateExamen').value;if(!nom||!date){alert('Matière + date obligatoire');return}const color=COLORS[matieres.length%COLORS.length];matieres.push({nom,type,duree,difficulte:diff,date,color});document.getElementById('matiere').value='';save();}
-function resetAll(){if(confirm('Effacer tout?')){matieres=[];checks={};save();}}
-function toggleCheck(id){checks[id]=!checks[id];save();}
-function render(){const today=new Date().toISOString().slice(0,10);const list=document.getElementById('taskList');list.innerHTML='';let done=0;matieres.forEach((m,i)=>{const id=today+'_'+i;if(checks[id])done++;const div=document.createElement('div');div.className='task';div.style.opacity=checks[id]?'0.5':'1';const days=Math.max(0,Math.ceil((new Date(m.date)-new Date())/86400000));div.innerHTML=`<input type="checkbox" ${checks[id]?'checked':''} onchange="toggleCheck('${id}')"><div class="dot" style="background:${m.color}"></div><div class="task-info"><b>${m.nom}</b><small>${m.type} • J-${days}</small></div><div class="mono" style="color:var(--muted);font-size:12px">${m.duree} min</div>`;list.appendChild(div);});document.getElementById('progressText').textContent=`${done} SÉANCE FAITE SUR ${matieres.length}`;if(matieres.length>0){const sorted=[...matieres].sort((a,b)=>new Date(a.date)-new Date(b.date));const next=sorted[0];const diffDays=Math.ceil((new Date(next.date)-new Date())/86400000);document.getElementById('alertText').textContent=`${next.nom} • examen dans ${diffDays} jours`;}const d=new Date();document.getElementById('todayDate').textContent='AUJOURD\'HUI';document.getElementById('dateLong').textContent=d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'}).toUpperCase();document.getElementById('dateLong').style.textTransform='uppercase';}
-function saveTime(){localStorage.setItem('cap_v2_time',document.getElementById('tempsDispo').value);}
-function premium(){alert('Cap Examens Premium 500F\n\nPaye via Wave / Orange Money au 07 99 69 63 47 (JABIN Ariel)\n\nEnvoie la capture sur WhatsApp et je débloque ton accès Premium à vie.');}
-render();
+if(localStorage.getItem('premium')==='yes'){document.getElementById('paywall').style.display='none'}
+function checkPremium(){
+ if(localStorage.getItem('premium')!=='yes'){document.getElementById('paywall').style.display='flex'}
+ else{alert('Séance lancée ! Bonne révision Boss 🎓')}
+}
+function unlockBoss(){
+ let c=document.getElementById('bossCode').value;
+ if(c==='JABIN2026'){localStorage.setItem('premium','yes');alert('Bienvenue Boss JABIN ! Accès Premium débloqué à vie 🔓');document.getElementById('paywall').style.display='none'}
+ else{alert('Code incorrect')}
+}
 </script>
 </body>
 </html>
